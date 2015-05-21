@@ -1,0 +1,273 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <title>Stacked area chart with data from MySQL using Highcharts</title>
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+		<script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/2.9.0/moment.min.js"></script>
+		<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap/3.3.2/css/bootstrap.css" />
+		 
+		<!-- Include Date Range Picker -->
+		<script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/1/daterangepicker.js"></script>
+		<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/1/daterangepicker-bs3.css" />
+		
+        <script type="text/javascript">
+        $(document).ready(function() {
+	
+
+			$(function() {
+				$('input[name="daterange"]').daterangepicker({
+					timePicker: false,
+					format: 'MM/DD/YYYY',
+					//timePicker12Hour: false,
+					//timePickerSeconds: false,
+			        ranges: {
+					   'Today': [moment(), moment()],
+					   'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+					   'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+					   'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+					   'This Month': [moment().startOf('month'), moment().endOf('month')],
+					   'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+						},
+				},
+				function(start, end, label){
+						$.getJSON(("data.php?daysParam="+start/1000+"-"+end/1000) , function(json) {
+						options.xAxis.categories = json[0]['data'];
+						options.series[0] = json[1];
+						//options.series[1] = json[2];
+						//options.series[2] = json[3];
+						chart = new Highcharts.Chart(options);
+            });
+				}
+				
+				);
+			});
+			
+			
+            var options = {
+                chart: {
+                    renderTo: 'container',
+                    type: 'line',
+                    marginRight: 130,
+                    marginBottom: 100
+                },
+                title: {
+                    text: 'Average Daily Temperature',
+                    x: -20 //center
+                },
+                subtitle: {
+                    text: '',
+                    x: -20
+                },
+                xAxis: {
+                    categories: []
+                },
+                yAxis: {
+                    title: {
+                        text: 'Requests'
+                    },
+                    plotLines: [{
+                        value: 0,
+                        width: 1,
+                        color: '#808080'
+                    }]
+                },
+                tooltip: {
+					valueDecimals: 2,
+                    formatter: function() {
+                            return '<b>'+ this.series.name +'</b><br/>'+
+                            this.x +': '+ this.y;
+                    }
+                },
+                legend: {
+                    layout: 'vertical',
+                    align: 'right',
+                    verticalAlign: 'top',
+                    x: -10,
+                    y: 100,
+                    borderWidth: 0
+                },
+                plotOptions: {
+                    area: {
+                        stacking: 'normal',
+                        lineColor: '#666666',
+                        lineWidth: 1,
+                        marker: {
+                            lineWidth: 1,
+                            lineColor: '#666666'
+                        }
+                    },
+					
+					    line: {
+							cursor: 'pointer',
+							point: {
+								events: {
+									click: function () {
+										
+										$('#dateDisplay').text(this.category);
+										options2.title.text = 'Temperature for ' + this.category;
+										
+										$.getJSON("data.php?dateParam="+this.category, function(json){
+											
+											options2.xAxis.categories = json[0]['data'];
+											for(i=1;i<json.length;i++){
+											options2.series[i-1] = json[i];
+											//options.series[1] = json[2];
+											//options.series[2] = json[3];
+											}
+											//options.xAxis.categories = json['category'];
+											//options.series[0].name = json['name'];
+											//options.series[0].data = json['data'];
+											
+											options2.xAxis.labels = {
+												formatter: function() {
+												//return Highcharts.dateFormat('%l%p', Date.parse(this.value +' UTC'));
+												return Highcharts.dateFormat('%l%p', Date.parse(this.value));
+												//return this.value;
+												}
+											}											
+											
+											chart2 = new Highcharts.Chart(options2);
+									
+											$('#back_btn').show();
+											
+										});
+
+										
+									}
+								}
+							},
+							dataLabels: {
+								enabled: true,
+								format: '{y:.2f} C'
+							}
+						}
+				
+                },
+                series: []
+            }
+            
+			
+			
+			var options2 = {
+                chart: {
+                    renderTo: 'container2',
+                    type: 'line',
+                    marginRight: 130,
+                    marginBottom: 100
+                },
+                title: {
+                    text: 'Display',
+                    x: -20 //center
+                },
+                subtitle: {
+                    text: '',
+                    x: -20
+                },
+                xAxis: {
+                    categories: []
+                },
+                yAxis: {
+                    title: {
+                        text: 'Requests'
+                    },
+                    plotLines: [{
+                        value: 0,
+                        width: 1,
+                        color: '#808080'
+                    }]
+                },
+                tooltip: {
+					valueDecimals: 2,
+                    formatter: function() {
+                            return '<b>'+ this.series.name +'</b><br/>'+
+                            this.x +': '+ this.y;
+                    }
+                },
+                legend: {
+                    layout: 'vertical',
+                    align: 'right',
+                    verticalAlign: 'top',
+                    x: -10,
+                    y: 100,
+                    borderWidth: 0
+                },
+                plotOptions: {
+                    area: {
+                        stacking: 'normal',
+                        lineColor: '#666666',
+                        lineWidth: 1,
+                        marker: {
+                            lineWidth: 1,
+                            lineColor: '#666666'
+                        }
+                    },
+					
+					    line: {
+							cursor: 'pointer',
+/* 							point: {
+								events: {
+									click: function () {
+										
+										$('#dateDisplay').text(this.category);
+										
+										$.getJSON("data.php?dateParam="+this.category, function(json){
+											
+											options.xAxis.categories = json[0]['data'];
+											for(i=1;i<json.length;i++){
+											options.series[i-1] = json[i];
+											//options.series[1] = json[2];
+											//options.series[2] = json[3];
+											}
+											//options.xAxis.categories = json['category'];
+											//options.series[0].name = json['name'];
+											//options.series[0].data = json['data'];
+											
+											options.xAxis.labels = {
+												formatter: function() {
+												//return Highcharts.dateFormat('%l%p', Date.parse(this.value +' UTC'));
+												return Highcharts.dateFormat('%l%p', Date.parse(this.value));
+												//return this.value;
+												}
+											}
+											options.chart.renderTo = 'container2';
+											options = new Highcharts.Chart(options);
+											
+											$('#back_btn').show();
+											
+										});
+
+										
+									}
+								}
+							}, */
+							dataLabels: {
+								enabled: true,
+								format: '{y:.2f} C'
+							}
+						}
+				
+                },
+                series: []
+            }
+			
+			
+			
+			
+            //$.getJSON("data.php", function(json) {
+
+			
+			
+	
+			
+        });
+        </script>
+        <script src="http://code.highcharts.com/highcharts.js"></script>
+        <script src="http://code.highcharts.com/modules/exporting.js"></script>
+    </head>
+    <body>
+		<input type="text" id="daterange" name="daterange" value="01/01/2015 - 01/01/2015" />
+        <div id="container" style="min-width: 200px; height: 400px; margin: 0 auto"></div>
+		<div id="container2" style="min-width: 200px; height: 400px; margin: 0 auto"></div>
+    </body>
+</html>

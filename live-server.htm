@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>Highcharts Example</title>
+		
+		
+		<!-- 1. Add these JavaScript inclusions in the head of your page -->
+		<script type="text/javascript" src="http://code.jquery.com/jquery-1.10.1.js"></script>
+		<script type="text/javascript" src="http://code.highcharts.com/highcharts.js"></script>
+		
+		
+		<!-- 2. Add the JavaScript to initialize the chart on document ready -->
+		<script>
+		var chart; // global
+		
+		/**
+		 * Request data from the server, add it to the graph and set a timeout to request again
+		 */
+		function requestData() {
+			$.ajax({
+				//url: 'live-server-data.php', 
+				url: 'pull_temp.php', 
+				success: function(point) {
+					var series = chart.series[0],
+						shift = series.data.length > 20; // shift if the series is longer than 20
+					var dbData = eval(point);
+					//PointsObj = JSON.parse(point);
+					//alert(dbData[0].date);
+					//alert(dbData[0].temp);
+					// add the point
+					//ptime = new Date(point[0].date);
+					//ptime2 = Date.UTC(ptime.getFullYear(), ptime.getMonth(), ptime.getDate(), ptime.getHours(), ptime.getMinutes(), ptime.getSeconds());
+					var d = new Date(0); 
+
+					var arrayLength = dbData.length;					
+					alert("blah");
+/* 					for (var i = 0; i < arrayLength; i++) {						
+						var d = new Date(0); 
+						d.setUTCSeconds(parseInt(dbData[i].date));					
+						if(dbData[i].zone == "Living Room"){
+								chart.series[0].addPoint([d.getTime(), parseFloat(dbData[i].temp)], true, shift);
+						}
+						if(dbData[i].zone == "Bedroom"){
+								chart.series[1].addPoint([d.getTime(), parseFloat(dbData[i].temp)], true, shift);
+						}
+						if(dbData[i].zone == "Basement"){
+								chart.series[2].addPoint([d.getTime(), parseFloat(dbData[i].temp)], true, shift);
+						}
+						
+
+						} */
+
+						
+					chart.series[0].data = dbData;
+						
+					//setTimeout(requestData, 1000);	
+					
+					
+				},
+				cache: false
+			});
+		}
+			
+		$(document).ready(function() {
+			chart = new Highcharts.Chart({
+				chart: {
+					renderTo: 'container',
+					defaultSeriesType: 'spline',
+					zoomType: 'x',
+					events: {
+						load: requestData
+					}
+				},
+				title: {
+					text: 'Red River Thermostat'
+				},
+				xAxis: {
+					type: 'datetime',
+					tickPixelInterval: 150,
+					maxZoom: 20 * 1000
+				},
+				yAxis: {
+					minPadding: 0.2,
+					maxPadding: 0.2,
+					title: {
+						text: 'Value',
+						margin: 80
+					}
+				},
+				series: [{
+					name: 'Living Room',
+					data: []
+				},
+				{
+					name: 'Bedroom',
+					data: []
+				},
+				{
+					name: 'Basement',
+					data: []
+				}]
+			});		
+		});
+		</script>
+		
+	</head>
+	<body>
+		
+		<!-- 3. Add the container -->
+		<div id="container" style="width: 1200px; height: 400px; margin: 0 auto"></div>
+		
+		<div style="width: 800px; margin: 0 auto">
+
+
+			
+		</div>
+	</body>
+</html>
