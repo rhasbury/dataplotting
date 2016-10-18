@@ -1,0 +1,106 @@
+<head>
+  	<meta charset="utf-8">
+  	<title>Time Series Data Plotter</title>	
+	<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.4/nv.d3.css">
+</head>
+<body>
+<div id='chart'>
+  <svg style='height:500px'> </svg>
+</div>
+	
+<script src="https://d3js.org/d3.v3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.4/nv.d3.min.js"></script>
+<script type='text/javascript'>
+
+
+// Mysql table should be formatted similar to this:
+// +---------------------+-------------+---------+
+// | tdate               | temperature | zone    |
+// +---------------------+-------------+---------+
+// | 2016-10-18 08:28:20 |     0.00000 | engine  |
+// | 2016-10-18 08:28:19 |    23.90000 | ambient |
+// | 2016-10-18 08:28:18 |    23.90000 | ambient |
+// | 2016-10-18 08:28:18 |     0.00000 | engine  |
+// | 2016-10-18 08:28:17 |    23.90000 | ambient |
+// | 2016-10-18 08:28:17 |     0.00000 | engine  |
+// | 2016-10-18 08:28:16 |    23.90000 | ambient |
+// | 2016-10-18 08:28:16 |     0.00000 | engine  |
+// | 2016-10-18 08:28:15 |    23.90000 | ambient |
+// | 2016-10-18 08:28:15 |     0.00000 | engine  |
+// +---------------------+-------------+---------+
+
+
+
+// here we build the url with all of the options. 
+var data_url = "data_pull_nv.php?"
+	// Database options 
+	data_url = data_url + "databasehost=localhost"
+	data_url = data_url + "&database=temps"
+	data_url = data_url + "&table=tempdat"
+	data_url = data_url + "&username=monitor"
+	data_url = data_url + "&password=password"
+
+// Table information for plotting
+	// set datefield to the column that will be the x axis for the graph. needs to be a DATETIME() mysql datatype. 
+	data_url = data_url + "&datefield=tdate"
+	// set yfield to the column that will be the y axis data 
+	data_url = data_url + "&yfield=temperature"
+	// set mapfield to the column that will be used to split the rows into separate data series 
+	data_url = data_url + "&mapfield=zone"
+	// set data limit to the maximum number of data points to pull. Data pulled will be by most recent, based on datefield. 
+	data_url = data_url + "&datalimit=200"
+
+// these pieces all concatenate into string that eventually looks something like:
+// data_url = "data_pull_nv.php?databasehost=localhost&database=temps&table=tempdat&username=monitor&password=password&datefield=tdate&yfield=temperature&mapfield=zone"
+	
+d3.json(data_url, function(error, data) {	
+	
+	
+	data.forEach(function(d) {		
+		d.x = new Date(+d.x*1000);
+		//d.x = +d.x;
+		d.y = +d.y;
+
+		}); 
+	
+	var dataGroup = d3.nest()
+		.key(function(d) {
+			return d.type;
+		})
+    	.entries(data);
+	
+	
+	nv.addGraph(function() {
+	  var chart = nv.models.lineWithFocusChart();
+
+	  chart.xAxis
+		  .tickFormat(function(d) {
+            return d3.time.format('%a-%d')(new Date(d))
+          });
+	  
+	  chart.x2Axis
+		  .tickFormat(function(d) {
+            return d3.time.format('%a-%d')(new Date(d))
+          });
+		
+	  chart.yAxis
+		  .tickFormat(d3.format(',.2f'));
+
+	  chart.y2Axis
+		  .tickFormat(d3.format(',.2f'));
+
+	  d3.select('#chart svg')
+		  .datum(dataGroup)
+		  .transition().duration(500)
+		  .call(chart);
+
+	  nv.utils.windowResize(chart.update);
+
+	  return chart;
+	});
+	
+	
+});
+
+</script>
+</body>
