@@ -4,8 +4,8 @@ This repo is for keeping my go-to templates for HTML Data plotting. Most of them
 
 For now, the only one up is Generic_Graph_From_Mysql.html which is a multi line chart with a view finder. The important part is that it comes with a PHP script that can pull data from mysql server and format in a way that nvd3 graphs like. 
 
-<pre>
 If your data is formated like this: 
+<pre>
 +---------------------+-------------+---------+
 | tdate               | temperature | zone    |
 +---------------------+-------------+---------+
